@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+
+  <style>
+    body {
+      background-image: url(2.jpg);
+      background-repeat: no-repeat;
+      background-position: center;
+    }
+  </style>
+</head>
+
+<body style="margin: 0;">
+
+  <canvas id="canvas" style="display: block;"></canvas>
+
+  <script>
+
+    let canvas = document.querySelector('#canvas');
+    let ctx = canvas.getContext('2d');
+    let isMouseDown = false;
+    let coords = [];
+
+    console.log(coords);
+
+    canvas.width = window.innerWidth - 10;
+    canvas.height = window.innerHeight - 10;
+
+    // code
+
+    canvas.addEventListener('mousedown', function () {
+      isMouseDown = true;
+    })
+
+    canvas.addEventListener('mouseup', function () {
+      ctx.beginPath();
+      isMouseDown = false;
+      coords.push('mouseup')
+    })
+
+    ctx.lineWidth = 4;
+
+    canvas.addEventListener('mousemove', e => {
+      if (isMouseDown) {
+
+        coords.push([e.clientX, e.clientY])
+
+        ctx.lineTo(e.clientX, e.clientY);
+        ctx.strokeStyle = 'black'
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.arc(e.clientX, e.clientY, 2, 0, Math.PI * 2);
+        ctx.fillStyle = 'black'
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.moveTo(e.clientX, e.clientY);
+      }
+    })
+
+    function claer() {
+      ctx.fillStyle = 'white';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.beginPath();
+      ctx.fillStyle = 'black';
+    }
+
+    function save() {
+      localStorage.setItem('coords', JSON.stringify(coords));
+    }
+
+    function replay() {
+      let timer = setInterval(() => {
+        if (!coords.length) {
+          clearInterval(timer);
+          ctx.beginPath();
+          return;
+        }
+
+        let crd = coords.shift();
+
+        let e = {
+          clientX: crd[0],
+          clientY: crd[1],
+        }
+
+        ctx.lineTo(e.clientX, e.clientY);
+        ctx.strokeStyle = 'black'
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.arc(e.clientX, e.clientY, 2, 0, Math.PI * 2);
+        ctx.fillStyle = 'black'
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.moveTo(e.clientX, e.clientY);
+      }, 2)
+    }
+
+    document.addEventListener('keydown', e => {
+      if (e.keyCode === 83) {
+        // save
+        save();
+        console.log('saved');
+      }
+      if (e.keyCode === 82) {
+        // replay
+        coords = JSON.parse(localStorage.getItem('coords'));
+        claer();
+        replay();
+        console.log('replaying');
+      }
+      if (e.keyCode === 67) {
+        // clear
+        claer();
+        console.log('cleared');
+      }
+    })
+
+
+
+
+  </script>
+
+</body>
+
+</html>
